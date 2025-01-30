@@ -1,8 +1,16 @@
 {
-  "name": "park",
+  "name": "ai-bar",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "src/lib.ts",
+  "types": "src/lib.ts",
+  "module": "src/lib.ts",
+  "exports": {
+    ".": {
+      "import": "./src/lib.ts"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
