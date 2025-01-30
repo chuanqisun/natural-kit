@@ -164,6 +164,7 @@ async function transcribe(options: TranscribeOptions): Promise<TranscribeResult>
 
   const definition = JSON.stringify({
     locales: [locale],
+    profanityFilterMode,
   });
 
   const formDataParts = [
