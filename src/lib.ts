@@ -9,5 +9,9 @@ export * from "./features/ai-bar/nodes/settings-node";
 export * from "./features/ai-bar/nodes/web-stt-node";
 export * from "./features/ai-bar/nodes/web-tts-node";
 
+// utils
+export * from "./features/ai-bar/shared/events";
+export * from "./features/llm/message";
+
 // default loader
 export * from "./features/ai-bar/loader";

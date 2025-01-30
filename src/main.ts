@@ -4,7 +4,7 @@ import type { AzureTtsNode } from "./features/ai-bar/nodes/azure-tts-node";
 import type { OpenAILlmNode } from "./features/ai-bar/nodes/openai-llm-node";
 import type { WebSttNode } from "./features/ai-bar/nodes/web-stt-node";
 import type { WebTtsNode } from "./features/ai-bar/nodes/web-tts-node";
-import { sttRecognizedEbentName, type SttRecognizedEventDetails } from "./features/ai-bar/shared/stt";
+import { sttRecognizedEventName, type SttRecognizedEventDetails } from "./features/ai-bar/shared/events";
 import { user } from "./features/llm/message";
 import "./style.css";
 
@@ -47,7 +47,7 @@ document.querySelector<HTMLButtonElement>(`[data-action="test-azure-stt"]`)?.add
       stt?.stop();
     });
 
-    stt.addEventListener(sttRecognizedEbentName, (e) => {
+    stt.addEventListener(sttRecognizedEventName, (e) => {
       const detail = (e as CustomEvent<SttRecognizedEventDetails>).detail;
       console.log(detail);
     });
@@ -72,7 +72,7 @@ document.querySelector<HTMLButtonElement>(`[data-action="test-web-stt"]`)?.addEv
       stt?.stop();
     });
 
-    stt.addEventListener(sttRecognizedEbentName, (e) => {
+    stt.addEventListener(sttRecognizedEventName, (e) => {
       const detail = (e as CustomEvent<SttRecognizedEventDetails>).detail;
       console.log(detail);
     });

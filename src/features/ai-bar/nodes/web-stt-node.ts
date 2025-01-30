@@ -1,4 +1,4 @@
-import { sttRecognizedEbentName, type SttRecognizedEventDetails } from "../shared/stt";
+import { sttRecognizedEventName, type SttRecognizedEventDetails } from "../shared/events";
 
 export function defineWebSttNode(tagName = "web-stt-node") {
   customElements.define(tagName, WebSttNode);
@@ -24,7 +24,7 @@ export class WebSttNode extends HTMLElement {
       const latestItem = [...e.results].at(-1);
       if (!latestItem) return;
       this.dispatchEvent(
-        new CustomEvent<SttRecognizedEventDetails>(sttRecognizedEbentName, {
+        new CustomEvent<SttRecognizedEventDetails>(sttRecognizedEventName, {
           detail: {
             text: latestItem[0].transcript,
             isFinal: latestItem.isFinal,

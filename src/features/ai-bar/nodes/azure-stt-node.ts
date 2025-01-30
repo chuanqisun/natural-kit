@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-import { sttRecognizedEbentName, type SttRecognizedEventDetails } from "../shared/stt";
+import { sttRecognizedEventName, type SttRecognizedEventDetails } from "../shared/events";
 import { AudioInputNode } from "./audio-input-node";
 import type { SettingsNode } from "./settings-node";
 
@@ -18,7 +18,7 @@ export class AzureSttNode extends HTMLElement {
   connectedCallback() {
     this.transcription$.subscribe((text) => {
       this.dispatchEvent(
-        new CustomEvent<SttRecognizedEventDetails>(sttRecognizedEbentName, {
+        new CustomEvent<SttRecognizedEventDetails>(sttRecognizedEventName, {
           detail: {
             text,
             isFinal: true,
