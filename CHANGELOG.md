@@ -1,6 +1,6 @@
-# v0.0.5
+# v0.0.6
 
-- Azure STT `start()` also returns the final value as a promise
+- Azure/Web STT `start()` also returns the final value as a promise
 
 # v0.0.4
 
