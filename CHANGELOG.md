@@ -1,3 +1,11 @@
+# v0.0.5
+
+- Azure STT `start()` also returns the final value as a promise
+
+# v0.0.4
+
+- Added: OpenAI transcription nodes
+
 # v0.0.3
 
 - Fixed: typescript erorr
