@@ -5,6 +5,8 @@ import { defineAzureTtsNode } from "./nodes/azure-tts-node";
 import { defineDragNode } from "./nodes/drag-node";
 import { defineHideBar } from "./nodes/hide-node";
 import { defineOpenAILlmNode } from "./nodes/openai-llm-node";
+import { defineOpenAISttNode } from "./nodes/openai-stt-node";
+import { defineOpenAISttStreamingNode } from "./nodes/openai-stt-streaming-node";
 
 import { defineSettingsNode } from "./nodes/settings-node";
 import { defineWebSttNode } from "./nodes/web-stt-node";
@@ -21,6 +23,8 @@ export function loadAIBar() {
   defineHideBar();
   defineDragNode();
   defineOpenAILlmNode();
+  defineOpenAISttNode();
+  defineOpenAISttStreamingNode();
   defineWebSttNode();
   defineWebTtsNode();
 }
