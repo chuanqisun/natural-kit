@@ -14,6 +14,11 @@ export class AzureSttNode extends HTMLElement {
   private abortController: AbortController | null = null;
   private mediaRecorderAsync = Promise.withResolvers<MediaRecorder>();
   private isMicrophoneStarted = false;
+  private transcriptionPromiseAPI: {
+    promise: Promise<string>;
+    resolve: (value: string) => void;
+    reject: (reason?: any) => void;
+  } | null = null;
 
   connectedCallback() {
     this.transcription$.subscribe((text) => {
@@ -44,38 +49,60 @@ export class AzureSttNode extends HTMLElement {
     console.log(`[azure-stt] microphone started`);
   }
 
-  public async start() {
-    if (this.isStarted) return;
-    if (!this.isMicrophoneStarted) this.startMicrophone();
+  public start(): Promise<string> {
+    if (this.isStarted) {
+      return this.transcriptionPromiseAPI?.promise ?? Promise.resolve("");
+    }
 
     const connection = document.querySelector<SettingsNode>("settings-node")?.getSettings();
-    if (!connection?.azureSpeechKey || !connection?.azureSpeechRegion) throw new Error("Missing Azure Speech credentials");
-
-    const { azureSpeechKey, azureSpeechRegion } = connection;
+    if (!connection?.azureSpeechKey || !connection?.azureSpeechRegion) {
+      return Promise.reject(new Error("Missing Azure Speech credentials"));
+    }
 
     this.isStarted = true;
-
-    const mediaRecorder = await this.mediaRecorderAsync.promise;
-
-    mediaRecorder.start();
-
+    this.transcriptionPromiseAPI = Promise.withResolvers<string>();
     this.abortController = new AbortController();
 
-    transcribe({
-      speechKey: azureSpeechKey,
-      speechRegion: azureSpeechRegion,
-      mediaRecorder,
-      signal: this.abortController.signal,
-      onSpeechEnded: () => console.log("[azure-stt] speech ended"),
-      onTextStarted: () => console.log("[azure-stt] text started"),
-    })
-      .then((result) => {
-        this.transcription$.next(result.combinedPhrases.at(0)?.text ?? "");
-      })
-      .catch((e) => {
-        this.transcription$.next("");
-        console.log("Transcribe handled error", e);
+    // Start the microphone if it hasn't been started yet
+    if (!this.isMicrophoneStarted) {
+      this.startMicrophone();
+    }
+
+    // The transcription process is kicked off here without awaiting it directly.
+    // The promise it returns is handled to resolve/reject the promise we returned to the caller.
+    this.beginTranscription(connection.azureSpeechKey, connection.azureSpeechRegion);
+
+    return this.transcriptionPromiseAPI.promise;
+  }
+
+  private async beginTranscription(azureSpeechKey: string, azureSpeechRegion: string) {
+    try {
+      const mediaRecorder = await this.mediaRecorderAsync.promise;
+      mediaRecorder.start();
+
+      const result = await transcribe({
+        speechKey: azureSpeechKey,
+        speechRegion: azureSpeechRegion,
+        mediaRecorder,
+        signal: this.abortController!.signal,
+        onSpeechEnded: () => console.log("[azure-stt] speech ended"),
+        onTextStarted: () => console.log("[azure-stt] text started"),
       });
+
+      const transcribedText = result.combinedPhrases.at(0)?.text ?? "";
+      this.transcription$.next(transcribedText);
+      this.transcriptionPromiseAPI?.resolve(transcribedText);
+    } catch (e) {
+      // This handles errors during transcription, e.g., network issues or aborts
+      this.transcription$.next("");
+      this.transcriptionPromiseAPI?.resolve(""); // Resolve with empty string on error/abort
+      console.log("Transcribe handled error", e);
+    } finally {
+      // Clean up for the next session
+      this.isStarted = false;
+      this.transcriptionPromiseAPI = null;
+      this.abortController = null;
+    }
   }
 
   public async stop() {
@@ -86,8 +113,8 @@ export class AzureSttNode extends HTMLElement {
     if (mediaRecorder && mediaRecorder.state === "recording") {
       mediaRecorder.stop();
     }
-
-    this.isStarted = false;
+    // The `beginTranscription` method will continue and resolve the promise upon completion.
+    // We only set isStarted to false in the `finally` block of `beginTranscription`.
     console.log("[azure-stt] session stopped");
   }
 
@@ -95,8 +122,8 @@ export class AzureSttNode extends HTMLElement {
     if (!this.isStarted) return;
 
     this.abortController?.abort();
-
-    this.isStarted = false;
+    // The promise will be resolved with "" in the catch block of `beginTranscription`
+    // when the fetch is aborted.
     console.log("[azure-stt] session aborted");
   }
 }
