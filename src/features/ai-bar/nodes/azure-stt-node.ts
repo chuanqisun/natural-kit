@@ -14,11 +14,7 @@ export class AzureSttNode extends HTMLElement {
   private abortController: AbortController | null = null;
   private mediaRecorderAsync = Promise.withResolvers<MediaRecorder>();
   private isMicrophoneStarted = false;
-  private transcriptionPromiseAPI: {
-    promise: Promise<string>;
-    resolve: (value: string) => void;
-    reject: (reason?: any) => void;
-  } | null = null;
+  private transcriptionPromise: PromiseWithResolvers<string> | null = null;
 
   connectedCallback() {
     this.transcription$.subscribe((text) => {
@@ -51,7 +47,7 @@ export class AzureSttNode extends HTMLElement {
 
   public start(): Promise<string> {
     if (this.isStarted) {
-      return this.transcriptionPromiseAPI?.promise ?? Promise.resolve("");
+      return this.transcriptionPromise?.promise ?? Promise.resolve("");
     }
 
     const connection = document.querySelector<SettingsNode>("settings-node")?.getSettings();
@@ -60,7 +56,7 @@ export class AzureSttNode extends HTMLElement {
     }
 
     this.isStarted = true;
-    this.transcriptionPromiseAPI = Promise.withResolvers<string>();
+    this.transcriptionPromise = Promise.withResolvers<string>();
     this.abortController = new AbortController();
 
     // Start the microphone if it hasn't been started yet
@@ -72,7 +68,7 @@ export class AzureSttNode extends HTMLElement {
     // The promise it returns is handled to resolve/reject the promise we returned to the caller.
     this.beginTranscription(connection.azureSpeechKey, connection.azureSpeechRegion);
 
-    return this.transcriptionPromiseAPI.promise;
+    return this.transcriptionPromise.promise;
   }
 
   private async beginTranscription(azureSpeechKey: string, azureSpeechRegion: string) {
@@ -91,16 +87,16 @@ export class AzureSttNode extends HTMLElement {
 
       const transcribedText = result.combinedPhrases.at(0)?.text ?? "";
       this.transcription$.next(transcribedText);
-      this.transcriptionPromiseAPI?.resolve(transcribedText);
+      this.transcriptionPromise?.resolve(transcribedText);
     } catch (e) {
       // This handles errors during transcription, e.g., network issues or aborts
       this.transcription$.next("");
-      this.transcriptionPromiseAPI?.resolve(""); // Resolve with empty string on error/abort
+      this.transcriptionPromise?.resolve(""); // Resolve with empty string on error/abort
       console.log("Transcribe handled error", e);
     } finally {
       // Clean up for the next session
       this.isStarted = false;
-      this.transcriptionPromiseAPI = null;
+      this.transcriptionPromise = null;
       this.abortController = null;
     }
   }

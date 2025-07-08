@@ -118,7 +118,7 @@ document.querySelector<HTMLButtonElement>(`[data-action="test-web-stt"]`)?.addEv
 
     trigger.addEventListener("mousedown", async () => {
       trigger.textContent = "Release to send";
-      stt?.start();
+      stt?.start().then((finalResponse) => console.log("Promise resolved", finalResponse));
     });
 
     trigger.addEventListener("mouseup", async () => {
